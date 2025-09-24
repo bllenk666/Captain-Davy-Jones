@@ -175,3 +175,108 @@ document.addEventListener('DOMContentLoaded', function() {
   // Inisialisasi
   updateCart();
 });
+// Komentar System
+document.addEventListener('DOMContentLoaded', function() {
+  // Load comments from localStorage
+  function loadComments() {
+    const comments = JSON.parse(localStorage.getItem('captainDavyJonesComments')) || [];
+    displayComments(comments);
+  }
+
+  // Display comments
+  function displayComments(comments) {
+    const container = document.getElementById('commentsContainer');
+    
+    if (comments.length === 0) {
+      container.innerHTML = `
+        <div class="empty-comments">
+          <i class="fas fa-comments"></i>
+          <p>Belum ada komentar. Jadilah yang pertama berkomentar!</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = comments.map(comment => `
+      <div class="comment-item">
+        <div class="comment-header">
+          <div class="comment-avatar">
+            ${comment.name.charAt(0).toUpperCase()}
+          </div>
+          <div class="comment-info">
+            <h4>${comment.name}</h4>
+            <span class="comment-date">${formatDate(comment.date)}</span>
+          </div>
+        </div>
+        <div class="comment-text">
+          ${comment.text}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Format date
+  function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
+  }
+
+  // Handle form submission
+  const commentForm = document.getElementById('commentForm');
+  if (commentForm) {
+    commentForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('commentName').value.trim();
+      const email = document.getElementById('commentEmail').value.trim();
+      const text = document.getElementById('commentText').value.trim();
+      
+      if (!name || !email || !text) {
+        alert('Harap isi semua field!');
+        return;
+      }
+      
+      // Create comment object
+      const comment = {
+        id: Date.now(),
+        name,
+        email,
+        text,
+        date: new Date().toISOString()
+      };
+      
+      // Get existing comments
+      const comments = JSON.parse(localStorage.getItem('captainDavyJonesComments')) || [];
+      
+      // Add new comment at the beginning
+      comments.unshift(comment);
+      
+      // Save to localStorage
+      localStorage.setItem('captainDavyJonesComments', JSON.stringify(comments));
+      
+      // Display comments
+      displayComments(comments);
+      
+      // Reset form
+      commentForm.reset();
+      
+      // Show success notification
+      const notif = document.createElement('div');
+      notif.style.cssText = `
+        position: fixed; bottom: 20px; right: 20px;
+        background: #22c55e; color: white; padding: 12px 20px;
+        border-radius: 8px; z-index: 4000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        font-weight: 500; font-family: 'Poppins', sans-serif;
+      `;
+      notif.textContent = '✅ Komentar berhasil ditambahkan!';
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 3000);
+      
+      // Scroll to comments section
+      document.getElementById('comments').scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  // Initial load
+  loadComments();
+});
